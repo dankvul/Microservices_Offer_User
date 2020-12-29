@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  user-api:
+    container_name: user-local
+    command: sh -c "sleep 5 && ./start.sh"
+    links:
+      - database
+      - offer-api
+    build:
+      context: ./
+      dockerfile: deployment/dockerfiles/user.Dockerfile
+    volumes:
+      - ./user:/app:ro
+    ports:
+      - 8000:8000
+    env_file:
+      - .env.user
+    restart: always
+
+  offer-api:
+    container_name: offer-local
+    command: sh -c "sleep 5 && ./start.sh"
+    links:
+      - database
+    build:
+      context: ./
+      dockerfile: deployment/dockerfiles/offer.Dockerfile
+    volumes:
+      - ./offer:/app:ro
+    expose:
+      - 8001
+    ports:
+      - 8001:8001
+    env_file:
+      - .env.offer
+    restart: always
+
+  database:
+    container_name: postgres-local
+    image: postgres
+    env_file:
+      - .env.db
+    ports:
+      - 5432:5432
+    volumes:
+      - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
